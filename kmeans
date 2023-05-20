@@ -1,0 +1,32 @@
+# reading the ASC data
+
+K <- read.ascii.grid("kfinal.asc", return.header = TRUE, print = 1)
+names(K)
+xyK = grid.to.xyz(K, varname = "data", colnames = c("x", "y", "K"))
+xyK2 <- na.omit(xyK)
+
+eU <- read.ascii.grid("ufinal.asc", return.header = TRUE, print = 1)
+names(eU)
+xyeU = grid.to.xyz(eU, varname = "data", colnames = c("x", "y", "eU"))
+xyeU2 <- na.omit(xyeU)
+
+eTh <- read.ascii.grid("thfinal.asc", return.header = TRUE, print = 1)
+names(eTh)
+xyeTh = grid.to.xyz(eTh, varname = "data", colnames = c("x", "y", "eTh"))
+xyeTh2 <- na.omit(xyeTh)
+
+newdata <- cbind(xyK2, xyeU2[,3], xyeTh2[,3])
+colnames(newdata) = c("x", "y","K","eU","eTh")
+
+# Clustering 
+
+cluster <- cascadeKM(newdata[,c(3:5)],2,27,iter = 100, criterion = "ssi")
+plot(cluster, gridcol = T, min.g = 2, max.g = 27)
+
+# clusterCrit
+
+clusterCrit <- data.matrix(newdata[,c(3:5)], rownames.force = NA)
+partition <- as.vector(newdata)
+partition2 <- partition$`n groups`
+partition2
+intCriteria(clusterCrit, partition2, c("Silhouette","Calinski_Harabasz","Dunn"))
